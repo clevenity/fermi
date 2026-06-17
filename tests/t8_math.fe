@@ -1,0 +1,12 @@
+import <std.io>;
+import <std.math>;
+fn main(): int {
+    let x: double = 2.0;
+    let s: double = math::sqrt(x);
+    io::print(s);
+    let p: double = math::pow(2.0, 10.0);
+    io::print(p);
+    let n: int = math::abs(-42);
+    io::print(n);
+    return 0;
+}

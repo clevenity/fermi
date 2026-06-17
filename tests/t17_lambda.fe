@@ -1,0 +1,17 @@
+import <std.io>;
+
+fn apply(x: int): int {
+    return x * 2;
+}
+
+fn main(): int {
+    let f = |x: int|: int { return x * 2; };
+    let r = f(21);
+    io::print(r);
+    io::print("\n");
+    let add_ten = |n: int|: int { return n + 10; };
+    io::print(add_ten(32));
+    io::print("\n");
+    io::print("lambda ok\n");
+    return 0;
+}

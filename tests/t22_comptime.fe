@@ -1,0 +1,28 @@
+comptime let VERSION_MAJOR: int = 1;
+comptime let VERSION_MINOR: int = 0;
+comptime let VERSION_PATCH: int = 3;
+comptime let VERSION: long = (VERSION_MAJOR * 10000) + (VERSION_MINOR * 100) + VERSION_PATCH;
+
+comptime let KB: long = 1024;
+comptime let MB: long = KB * 1024;
+comptime let GB: long = MB * 1024;
+
+comptime let FLAG_READ:  int = 1;
+comptime let FLAG_WRITE: int = 2;
+comptime let FLAG_EXEC:  int = 4;
+comptime let FLAG_ALL:   int = FLAG_READ | FLAG_WRITE | FLAG_EXEC;
+
+fn check_flags(flags: int) -> bool {
+    @assert(flags >= 0, "flags must be non-negative");
+    return (flags & FLAG_READ) != 0;
+}
+
+fn main() -> int {
+    let v: long = VERSION;
+    let _ = v;
+    let mem: long = MB * 4;
+    let _ = mem;
+    let readable: bool = check_flags(FLAG_ALL);
+    let _ = readable;
+    return 0;
+}

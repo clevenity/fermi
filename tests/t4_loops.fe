@@ -1,0 +1,9 @@
+import <std.io>;
+fn main(): int {
+    mut sum = 0;
+    for (mut i = 1; i <= 100; i++) {
+        sum += i;
+    }
+    io::print(sum);
+    return 0;
+}

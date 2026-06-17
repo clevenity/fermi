@@ -1,0 +1,29 @@
+# build output
+/build/
+*.o
+*.a
+*.so
+*.exe
+
+# cmake out-of-source build dirs (in case anyone configures one)
+/cmake-build*/
+CMakeCache.txt
+CMakeFiles/
+
+# nix
+/result
+/result-*
+
+# fermi compile cache, if ever generated inside the repo
+.cache/fermi/
+
+# editors / OS junk
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# local dev convenience scripts, not part of the project
+/push.sh
+

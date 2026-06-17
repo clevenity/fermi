@@ -1,0 +1,23 @@
+import <std.io>;
+
+fn main(): int {
+    // let = immutable ptr ke rodata
+    let s1 = "hello";
+    io::print("%{s1}\n");
+
+    // mut = heap-copy, bisa di-reassign
+    mut s2 = "world";
+    io::print("%{s2}\n");
+
+    // reassign: free lama, malloc+strcpy baru
+    s2 = "fermi";
+    io::print("%{s2}\n");
+
+    // mut dengan type annotation
+    mut s3: str = "one";
+    io::print("%{s3}\n");
+    s3 = "two";
+    io::print("%{s3}\n");
+
+    return 0;
+}

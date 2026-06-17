@@ -1,0 +1,7 @@
+fn main(): int {
+    let x = 42;
+    let y = 3.14;
+    let s = "hello world";
+    let b = true;
+    return 0;
+}

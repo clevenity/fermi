@@ -1,0 +1,16 @@
+import <std.io>;
+fn add(a: int, b: int): int {
+    return a + b;
+}
+
+fn mul(x: int, y: int): int {
+    return x * y;
+}
+
+fn main(): int {
+    let s: int = add(3, 4);
+    let p: int = mul(5, 6);
+    let total: int = add(s, p);
+    io::print("param opt ok");
+    return 0;
+}

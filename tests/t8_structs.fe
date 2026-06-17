@@ -1,0 +1,57 @@
+import <std.io>;
+
+struct Counter {
+    value: int;
+    step: int;
+
+    fn new(self, v: int, s: int) {
+        self.value = v;
+        self.step = s;
+    }
+
+    fn tick(self) {
+        self.value = self.value + self.step;
+    }
+
+    fn get(self): int {
+        return self.value;
+    }
+
+    fn reset(self) {
+        self.value = 0;
+    }
+}
+
+struct Point {
+    x: int;
+    y: int;
+
+    fn dist_sq(self): int {
+        return self.x * self.x + self.y * self.y;
+    }
+
+    fn translate(self, dx: int, dy: int) {
+        self.x = self.x + dx;
+        self.y = self.y + dy;
+    }
+}
+
+fn main(): int {
+    let c = Counter { value: 0, step: 5 };
+    c.tick();
+    c.tick();
+    c.tick();
+    io::print(c.get());   
+
+    c.reset();
+    io::print(c.get());   
+
+    let p = Point { x: 3, y: 4 };
+    io::print(p.dist_sq());  
+
+    p.translate(1, 1);
+    io::print(p.x);   
+    io::print(p.y);   
+
+    return 0;
+}

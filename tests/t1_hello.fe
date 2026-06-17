@@ -1,0 +1,5 @@
+import <std.io>;
+fn main(): int {
+    io::print("Hello, World!");
+    return 0;
+}

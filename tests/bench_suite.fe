@@ -1,0 +1,70 @@
+fn fib_iter(n: long): long {
+    mut a: long = 0;
+    mut b: long = 1;
+    mut i: long = 0;
+    while (i < n) {
+        let t = a + b;
+        a = b;
+        b = t;
+        i = i + 1;
+    }
+    return a;
+}
+
+fn sum_range(lo: long, hi: long): long {
+    mut s: long = 0;
+    mut i: long = lo;
+    while (i <= hi) {
+        s = s + i;
+        i = i + 1;
+    }
+    return s;
+}
+
+fn collatz(n: long): long {
+    mut x: long = n;
+    mut steps: long = 0;
+    while (x != 1) {
+        if (x % 2 == 0) {
+            x = x / 2;
+        } else {
+            x = x * 3 + 1;
+        }
+        steps = steps + 1;
+    }
+    return steps;
+}
+
+fn matrix_sum(n: long): long {
+    mut s: long = 0;
+    mut i: long = 0;
+    while (i < n) {
+        mut j: long = 0;
+        while (j < n) {
+            s = s + i * n + j;
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+    return s;
+}
+
+fn main(): int {
+    let f = fib_iter(40);
+    io::print(f);
+    io::print("\n");
+
+    let s = sum_range(0, 1000000);
+    io::print(s);
+    io::print("\n");
+
+    let c = collatz(837799);
+    io::print(c);
+    io::print("\n");
+
+    let m = matrix_sum(256);
+    io::print(m);
+    io::print("\n");
+
+    return 0;
+}

@@ -1,0 +1,9 @@
+import <std.io>;
+fn main(): int {
+    let n: int = 65;
+    let c: char = n as char;
+    let f: double = n as double;
+    io::print(c);
+    io::print(f);
+    return 0;
+}

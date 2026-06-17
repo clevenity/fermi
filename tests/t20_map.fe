@@ -1,0 +1,23 @@
+import <std.io>;
+
+fn main(): int {
+    let m: *int = map::new();
+    map::set(m, "alpha", 42);
+    map::set(m, "beta", 99);
+    let v: int = map::get(m, "alpha");
+    io::print(v);
+    io::print("\n");
+    let has: bool = map::has(m, "beta");
+    io::print(has);
+    io::print("\n");
+    let missing: bool = map::has(m, "gamma");
+    io::print(missing);
+    io::print("\n");
+    map::delete(m, "alpha");
+    let gone: bool = map::has(m, "alpha");
+    io::print(gone);
+    io::print("\n");
+    map::free(m);
+    io::print("map ok\n");
+    return 0;
+}

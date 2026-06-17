@@ -1,0 +1,21 @@
+import <std.io>;
+enum Option {
+    Some(int),
+    None,
+}
+
+fn unwrap_or(opt: Option, default_val: int): int {
+    match (opt) {
+        Some(v) => return v;
+        None    => return default_val;
+        _       => return default_val;
+    }
+}
+
+fn main(): int {
+    let s = Some(42);
+    let n = None;
+    io::print(unwrap_or(s, 0));
+    io::print(unwrap_or(n, 99));
+    return 0;
+}

@@ -1,0 +1,16 @@
+import <std.io>;
+fn fib(n: int): int {
+    if (n <= 1) { return n; }
+    return fib(n - 1) + fib(n - 2);
+}
+
+fn main(): int {
+    mut i = 0;
+    while (i < 10) {
+        io::print(fib(i));
+        io::print(" ");
+        i = i + 1;
+    }
+    io::print("\n");
+    return 0;
+}
