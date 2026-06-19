@@ -27,4 +27,4 @@ CMakeFiles/
 # local dev convenience scripts, not part of the project
 /push.sh
 /WORK.md
-/tests
+tests/
