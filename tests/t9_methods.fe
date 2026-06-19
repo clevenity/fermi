@@ -1,5 +1,5 @@
 import <std.io>;
-struct Counter {
+class Counter {
     value: int;
     step: int;
 

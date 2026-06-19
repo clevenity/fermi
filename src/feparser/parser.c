@@ -107,7 +107,7 @@ static AstList *parse_params(Parser *p){
     while(!chk(p,TOK_RPAREN)&&!chk(p,TOK_EOF)){
         AstNode *param=nd(p,NODE_VAR_DECL);
         if(chk(p,TOK_MUT)){adv(p);param->var_decl.is_mut=1;}
-        if(!chk(p,TOK_IDENT)){err(p,"expected parameter name");break;}
+        if(!chk(p,TOK_IDENT)){err(p,"expected identifier as parameter name");break;}
         param->var_decl.name=arena_strdup(p->arena,p->cur.value);adv(p);
         if(mat(p,TOK_COLON))param->var_decl.type=parse_type(p);
         if(mat(p,TOK_ASSIGN))param->var_decl.init=parse_expr(p);
@@ -224,7 +224,7 @@ static AstNode *parse_primary(Parser *p){
         AstList *head=NULL,*tail=NULL;
         while(!chk(p,TOK_PIPE)&&!chk(p,TOK_EOF)){
             AstNode *param=nd(p,NODE_VAR_DECL);
-            if(!chk(p,TOK_IDENT)){err(p,"expected parameter name");break;}
+            if(!chk(p,TOK_IDENT)){err(p,"expected identifier as parameter name");break;}
             param->var_decl.name=arena_strdup(p->arena,p->cur.value);adv(p);
             if(mat(p,TOK_COLON))param->var_decl.type=parse_type(p);
             head=lapp(p,head,&tail,param);
@@ -239,13 +239,13 @@ static AstNode *parse_primary(Parser *p){
     if(chk(p,TOK_AT)){
         adv(p);
         if(!chk(p,TOK_IDENT)){
-            err(p,"expected intrinsic name after '@'");
+            err(p,"expected identifier as intrinsic name after '@'");
             AstNode *n=nd(p,NODE_INT_LIT);n->int_lit.val=0;n->ty=TY_INT;return n;
         }
         AstNode *n=nd(p,NODE_AT_CALL);
         n->at_call.name=arena_strdup(p->arena,p->cur.value);adv(p);
         n->at_call.type_arg=NULL;n->at_call.args=NULL;
-        expect(p,TOK_LPAREN,"expected '(' after intrinsic");
+        expect(p,TOK_LPAREN,"expected '(' after intrinsic identifier");
         if(!strcmp(n->at_call.name,"sizeof")||!strcmp(n->at_call.name,"alignof")||!strcmp(n->at_call.name,"typeof")){
             if(!chk(p,TOK_RPAREN))n->at_call.type_arg=parse_type(p);
         } else {
@@ -264,7 +264,7 @@ static AstNode *parse_primary(Parser *p){
         char *ns=arena_strdup(p->arena,p->cur.value);
         adv(p);adv(p);
         if(chk(p,TOK_EOF)||chk(p,TOK_SEMICOLON)){
-            err(p,"expected name after '::'");
+            err(p,"expected identifier after '::'");
             AstNode *n=nd(p,NODE_INT_LIT);n->int_lit.val=0;n->ty=TY_INT;return n;
         }
         char *fname=arena_strdup(p->arena,p->cur.value);adv(p);
@@ -290,7 +290,7 @@ static AstNode *parse_primary(Parser *p){
         expect(p,TOK_LBRACE,"expected '{'");
         AstList *head=NULL,*tail=NULL;
         while(!chk(p,TOK_RBRACE)&&!chk(p,TOK_EOF)){
-            if(!chk(p,TOK_IDENT)){err(p,"expected field name");break;}
+            if(!chk(p,TOK_IDENT)){err(p,"expected identifier as field name");break;}
             AstNode *fa=nd(p,NODE_ASSIGN);
             AstNode *lv=nd(p,NODE_IDENT);
             lv->ident.name=arena_strdup(p->arena,p->cur.value);adv(p);
@@ -330,7 +330,7 @@ static AstNode *parse_primary(Parser *p){
         mat(p,TOK_RBRACE);
         n->interp_str.parts=head;return n;
     }
-    err(p,"unexpected token in expression");adv(p);
+    err(p,"unexpected token in expression context");adv(p);
     AstNode *n=nd(p,NODE_INT_LIT);n->int_lit.val=0;n->ty=TY_INT;return n;
 }
 
@@ -339,7 +339,7 @@ static AstNode *parse_postfix(Parser *p){
     for(;;){
         if(chk(p,TOK_DOT)){
             adv(p);
-            if(!chk(p,TOK_IDENT)){err(p,"expected field name after '.'");break;}
+            if(!chk(p,TOK_IDENT)){err(p,"expected identifier as field name after '.'");break;}
             if(chkp(p,TOK_LPAREN)){
                 AstNode *callee=nd(p,NODE_FIELD);
                 callee->field.obj=n;
@@ -506,32 +506,6 @@ static AstNode *parse_var_decl(Parser *p, int is_mut, int is_const){
     if(mat(p,TOK_ASSIGN))n->var_decl.init=parse_expr(p);
     expect(p,TOK_SEMICOLON,"expected ';'");
     return n;
-}
-
-static AstNode *parse_struct_decl(Parser *p){
-    adv(p);
-    if(!chk(p,TOK_IDENT)){err(p,"expected struct name");return NULL;}
-    AstNode *n=nd(p,NODE_STRUCT_DECL);
-    n->struct_decl.name=arena_strdup(p->arena,p->cur.value);adv(p);
-    expect(p,TOK_LBRACE,"expected '{'");
-    AstList *fhead=NULL,*ftail=NULL,*mhead=NULL,*mtail=NULL;
-    while(!chk(p,TOK_RBRACE)&&!chk(p,TOK_EOF)){
-        if(chk(p,TOK_FN)||chk(p,TOK_UNIT)){
-            int is_unit=chk(p,TOK_UNIT);
-            AstNode *m=parse_fn_decl(p,is_unit,0,0);
-            if(m)mhead=lapp(p,mhead,&mtail,m);
-        } else if(chk(p,TOK_IDENT)){
-            AstNode *f=nd(p,NODE_VAR_DECL);
-            f->var_decl.name=arena_strdup(p->arena,p->cur.value);adv(p);
-            expect(p,TOK_COLON,"expected ':'");
-            f->var_decl.type=parse_type(p);
-            if(mat(p,TOK_ASSIGN))f->var_decl.init=parse_expr(p);
-            expect(p,TOK_SEMICOLON,"expected ';'");
-            fhead=lapp(p,fhead,&ftail,f);
-        } else { err(p,"unexpected token in struct body"); adv(p); }
-    }
-    expect(p,TOK_RBRACE,"expected '}'");
-    n->struct_decl.fields=fhead;n->struct_decl.methods=mhead;return n;
 }
 
 static AstNode *parse_enum_decl(Parser *p){
@@ -809,7 +783,6 @@ static AstNode *parse_stmt(Parser *p){
         if(!chk(p,TOK_SEMICOLON))n->ret.val=parse_expr(p);
         expect(p,TOK_SEMICOLON,"expected ';'");return n;
     }
-    case TOK_STRUCT: return parse_struct_decl(p);
     case TOK_ENUM:   return parse_enum_decl(p);
     case TOK_LBRACE: return parse_block(p);
     case TOK_REGION: return parse_region(p);
@@ -830,7 +803,7 @@ static AstNode *parse_stmt(Parser *p){
         if(!chk(p,TOK_LET)){err(p,"expected 'let' after 'comptime'");return NULL;}
         adv(p);
         AstNode *n=nd(p,NODE_COMPTIME_LET);
-        if(!chk(p,TOK_IDENT)){err(p,"expected name");return NULL;}
+        if(!chk(p,TOK_IDENT)){err(p,"expected identifier as binding name");return NULL;}
         n->comptime_let.name=arena_strdup(p->arena,p->cur.value);adv(p);
         if(mat(p,TOK_COLON))parse_type(p);
         expect(p,TOK_ASSIGN,"expected '='");
@@ -871,7 +844,7 @@ static AstNode *parse_import(Parser *p){
         n->import.path=arena_strdup(p->arena,buf);n->import.is_std=1;
     }else if(chk(p,TOK_STRING_LIT)){
         n->import.path=arena_strdup(p->arena,p->cur.value);n->import.is_std=0;adv(p);
-    }else err(p,"expected import path");
+    }else err(p,"expected string literal or '<...>' as import path");
     mat(p,TOK_SEMICOLON);
     return n;
 }
@@ -911,11 +884,10 @@ static AstNode *parse_top_level(Parser *p){
         if(chk(p,TOK_FN)||chk(p,TOK_UNIT)) return parse_fn_decl(p,is_unit,1,0);
         err(p,"expected 'fn' or 'unit' after 'external'");return NULL;
     }
-    case TOK_STRUCT: return parse_struct_decl(p);
     case TOK_ENUM:   return parse_enum_decl(p);
     case TOK_CLASS: {
         adv(p);
-        if(!chk(p,TOK_IDENT)){err(p,"expected class name");return NULL;}
+        if(!chk(p,TOK_IDENT)){err(p,"expected identifier as class declaration name");return NULL;}
         AstNode *n=nd(p,NODE_CLASS_DECL);
         n->class_decl.name=arena_strdup(p->arena,p->cur.value);adv(p);
         expect(p,TOK_LBRACE,"expected '{'");
@@ -930,7 +902,7 @@ static AstNode *parse_top_level(Parser *p){
                 expect(p,TOK_LBRACE,"expected '{'");
                 n->class_decl.public_members=parse_class_body(p);
                 expect(p,TOK_RBRACE,"expected '}'");
-            } else { err(p,"expected 'private' or 'public' in class body"); adv(p); }
+            } else { err(p,"expected 'private' or 'public' access specifier in class body"); adv(p); }
         }
         expect(p,TOK_RBRACE,"expected '}'");return n;
     }
@@ -941,7 +913,7 @@ static AstNode *parse_top_level(Parser *p){
         if(!chk(p,TOK_LET)){err(p,"expected 'let' after 'comptime'");return NULL;}
         adv(p);
         AstNode *n=nd(p,NODE_COMPTIME_LET);
-        if(!chk(p,TOK_IDENT)){err(p,"expected name");return NULL;}
+        if(!chk(p,TOK_IDENT)){err(p,"expected identifier as binding name");return NULL;}
         n->comptime_let.name=arena_strdup(p->arena,p->cur.value);adv(p);
         if(mat(p,TOK_COLON))parse_type(p);
         expect(p,TOK_ASSIGN,"expected '='");
@@ -950,7 +922,7 @@ static AstNode *parse_top_level(Parser *p){
     }
     case TOK_TYPE: {
         adv(p);
-        if(!chk(p,TOK_IDENT)){err(p,"expected type name");return NULL;}
+        if(!chk(p,TOK_IDENT)){err(p,"expected identifier as type alias name");return NULL;}
         AstNode *n=nd(p,NODE_TYPE_ALIAS);
         n->type_alias.name=arena_strdup(p->arena,p->cur.value);adv(p);
         expect(p,TOK_ASSIGN,"expected '='");
@@ -958,7 +930,7 @@ static AstNode *parse_top_level(Parser *p){
         mat(p,TOK_SEMICOLON);return n;
     }
     default:
-        err(p,"unexpected token at top level");adv(p);return NULL;
+        err(p,"unexpected token at top-level declaration context");adv(p);return NULL;
     }
 }
 

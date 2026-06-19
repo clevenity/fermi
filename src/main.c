@@ -212,10 +212,10 @@ int main(int argc, char **argv) {
             if(opt_lvl_int<0||opt_lvl_int>3)opt_lvl_int=2;
         }
         else if(argv[i][0]=='-')
-            fprintf(stderr,"fermi: warning[W0001]: unknown option '%s'; ignored\n",argv[i]);
+            fprintf(stderr,"fermi: warning[W0001]: unrecognized option '%s'; option ignored\n",argv[i]);
         else if(!input) input=argv[i];
     }
-    if(!input){fprintf(stderr,"fermi: error: no input file\n");usage(argv[0]);return 1;}
+    if(!input){fprintf(stderr,"fermi: error[E0000]: no input file specified\n");usage(argv[0]);return 1;}
 
     int run_mode=!mode_fir&&!mode_ast&&!mode_lex&&!explicit_output;
 
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
     if(run_mode){
         struct stat fst;
         if(stat(input,&fst)!=0){
-            fprintf(stderr,"fermi: error: cannot stat '%s'\n",input);return 1;
+            fprintf(stderr,"fermi: error[E0000]: unable to access source file '%s'; stat() failed\n",input);return 1;
         }
         char ver[32];
         snprintf(ver,sizeof(ver),"%d.%d.%d",V_MAJOR,V_MINOR,V_PATCH);
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
 
     size_t src_len=0;
     char *src=read_file(input,&src_len);
-    if(!src){fprintf(stderr,"fermi: error: cannot open '%s'\n",input);return 1;}
+    if(!src){fprintf(stderr,"fermi: error[E0000]: unable to open source file '%s'\n",input);return 1;}
 
     Arena arena_val=arena_new(64*1024*1024);
     Arena *arena=&arena_val;
@@ -303,7 +303,7 @@ int main(int argc, char **argv) {
     double tllvm_end=now_ms();
 
     if(!obj.ok){
-        fprintf(stderr,"fermi: error: LLVM code generation failed: %s\n",obj.err);
+        fprintf(stderr,"fermi: error[E0011]: LLVM backend code generation failed: %s\n",obj.err);
         free(src);arena_free(arena);return 1;
     }
 
@@ -318,7 +318,7 @@ int main(int argc, char **argv) {
     int ofd=make_temp_path(tmp_obj,sizeof(tmp_obj),"fermi_",".o");
     if(ofd<0){
         fir_obj_free(&obj);
-        fprintf(stderr,"fermi: error: cannot create temporary object file\n");
+        fprintf(stderr,"fermi: error[E0012]: failed to allocate temporary object file path\n");
         free(src);arena_free(arena);return 1;
     }
     ssize_t written=(ssize_t)0;
@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
     if((size_t)written!=obj.size-remain+(size_t)(objp-obj.data)){
         if(remain!=0){
             unlink(tmp_obj);
-            fprintf(stderr,"fermi: error: failed to write object file (short write)\n");
+            fprintf(stderr,"fermi: error[E0013]: incomplete write to object file; short write detected\n");
             free(src);arena_free(arena);return 1;
         }
     }
@@ -352,7 +352,7 @@ int main(int argc, char **argv) {
     unlink(tmp_obj);
     free(src);arena_free(arena);
 
-    if(rc!=0){fprintf(stderr,"fermi: error: link failed (exit %d)\n",rc>>8);return 1;}
+    if(rc!=0){fprintf(stderr,"fermi: error[E0014]: linker invocation failed with exit code %d\n",rc>>8);return 1;}
 
     if(run_mode){
         chmod(output,0755);

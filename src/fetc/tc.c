@@ -63,17 +63,6 @@ static void predef_top(Tc *t,AstNode *prog){
                 n->fn_decl.ret_type->name:NULL;
             sc_def(t,n->fn_decl.name,ret,ty_name);break;
         }
-        case NODE_STRUCT_DECL:
-            sc_def(t,n->struct_decl.name,TY_NAMED,n->struct_decl.name);
-            for(AstList *ml=n->struct_decl.methods;ml;ml=ml->next){
-                AstNode *m=ml->node;if(!m||m->kind!=NODE_FN_DECL)continue;
-                char mname[256];
-                snprintf(mname,sizeof(mname),"%s__%s",n->struct_decl.name,m->fn_decl.name);
-                TypeKind ret=m->fn_decl.is_unit?TY_VOID:
-                    (m->fn_decl.ret_type?typenode_kind(m->fn_decl.ret_type):TY_VOID);
-                sc_def(t,mname,ret,NULL);
-            }
-            break;
         case NODE_ENUM_DECL:
             sc_def(t,n->enum_decl.name,TY_NAMED,n->enum_decl.name);
             for(AstList *vl=n->enum_decl.variants;vl;vl=vl->next){
@@ -116,7 +105,7 @@ static TypeKind infer(Tc *t,AstNode *n){
         char *op=n->unary.op;
         if(!strcmp(op,"!")){ n->ty=TY_BOOL;return TY_BOOL; }
         if(!strcmp(op,"~")){
-            if(!is_integral(ot)){terr(t,n->line,n->col,"'~' requires integral type");}
+            if(!is_integral(ot)){terr(t,n->line,n->col,"bitwise complement operator '~' applied to non-integral operand");}
             n->ty=ot;return ot;
         }
         n->ty=ot;return ot;
@@ -127,7 +116,7 @@ static TypeKind infer(Tc *t,AstNode *n){
         if(!strcmp(op,"&")||!strcmp(op,"|")||!strcmp(op,"^")||
            !strcmp(op,"<<")||!strcmp(op,">>")){
             if(!is_integral(lt)||!is_integral(rt)){
-                terr(t,n->line,n->col,"bitwise op requires integral types");
+                terr(t,n->line,n->col,"bitwise operator applied to non-integral operand(s)");
             }
             TypeKind r=promote(lt,rt);n->ty=r;return r;
         }
@@ -253,10 +242,6 @@ void tc_check(Tc *t,AstNode *program){
         AstNode *n=it->node;if(!n)continue;
         switch(n->kind){
         case NODE_FN_DECL:case NODE_UNIT_DECL: check_fn(t,n);break;
-        case NODE_STRUCT_DECL:
-            sc_def(t,n->struct_decl.name,TY_NAMED,n->struct_decl.name);
-            for(AstList *ml=n->struct_decl.methods;ml;ml=ml->next) check_fn(t,ml->node);
-            break;
         case NODE_VAR_DECL:
             if(n->var_decl.init) infer(t,n->var_decl.init);
             break;

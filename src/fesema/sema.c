@@ -73,7 +73,7 @@ static void chk(Sema *s, AstNode *n){
             SymE *e=sc_lookup(s,n->assign.left->ident.name);
             if(e&&!e->is_mut){
                 char msg[256];
-                snprintf(msg,sizeof(msg),"cannot assign to immutable binding '%s'",
+                snprintf(msg,sizeof(msg),"reassignment of read-only identifier '%s'",
                          n->assign.left->ident.name);
                 serr(s,n->line,n->col,"E0003",msg);
             }
@@ -85,7 +85,7 @@ static void chk(Sema *s, AstNode *n){
             SymE *e=sc_lookup(s,n->compound_assign.left->ident.name);
             if(e&&!e->is_mut){
                 char msg[256];
-                snprintf(msg,sizeof(msg),"cannot assign to immutable binding '%s'",
+                snprintf(msg,sizeof(msg),"reassignment of read-only identifier '%s'",
                          n->compound_assign.left->ident.name);
                 serr(s,n->line,n->col,"E0003",msg);
             }
@@ -107,18 +107,11 @@ static void chk(Sema *s, AstNode *n){
         const char *nm=n->ident.name;
         if(strcmp(nm,"null")!=0&&strcmp(nm,"nullptr")!=0&&!sc_lookup(s,nm)){
             char msg[256];
-            snprintf(msg,sizeof(msg),"undefined symbol '%s'",nm);
+            snprintf(msg,sizeof(msg),"use of undeclared identifier '%s'",nm);
             serr(s,n->line,n->col,"E0002",msg);
         }
         break;
     }
-    case NODE_STRUCT_DECL:
-        sc_def(s,n->struct_decl.name,0,1);
-        for(AstList *ml=n->struct_decl.methods;ml;ml=ml->next){
-            AstNode *m=ml->node;
-            if(m&&m->fn_decl.name) sc_def(s,m->fn_decl.name,0,1);
-        }
-        break;
     case NODE_ENUM_DECL:
         sc_def(s,n->enum_decl.name,0,1);
         for(AstList *vl=n->enum_decl.variants;vl;vl=vl->next){
@@ -184,13 +177,6 @@ static void predef_fn(Sema *s, AstNode *prog){
         switch(n->kind){
         case NODE_FN_DECL: case NODE_UNIT_DECL:
             if(n->fn_decl.name) sc_def(s,n->fn_decl.name,0,1);
-            break;
-        case NODE_STRUCT_DECL:
-            sc_def(s,n->struct_decl.name,0,1);
-            for(AstList *ml=n->struct_decl.methods;ml;ml=ml->next){
-                AstNode *m=ml->node;
-                if(m&&m->fn_decl.name) sc_def(s,m->fn_decl.name,0,1);
-            }
             break;
         case NODE_ENUM_DECL:
             sc_def(s,n->enum_decl.name,0,1);

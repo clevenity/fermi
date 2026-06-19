@@ -22,7 +22,7 @@ struct TypeNode {
 
 typedef enum {
     NODE_PROGRAM, NODE_IMPORT, NODE_EXPORT_MODULE, NODE_FN_DECL, NODE_UNIT_DECL,
-    NODE_STRUCT_DECL, NODE_ENUM_DECL, NODE_CLASS_DECL, NODE_TYPE_ALIAS,
+    NODE_ENUM_DECL, NODE_CLASS_DECL, NODE_TYPE_ALIAS,
     NODE_VAR_DECL, NODE_CONST_DECL, NODE_BLOCK,
     NODE_IF, NODE_WHILE, NODE_DO_WHILE, NODE_FOR_C, NODE_FOR_IN,
     NODE_MATCH, NODE_MATCH_ARM, NODE_RETURN, NODE_BREAK, NODE_CONTINUE,
@@ -55,7 +55,6 @@ struct AstNode {
             char *name; AstList *params; TypeNode *ret_type;
             AstNode *body; int is_unit; int is_extern; int is_exported;
         } fn_decl;
-        struct { char *name; AstList *fields; AstList *methods; } struct_decl;
         struct { char *name; AstList *variants; } enum_decl;
         struct { char *name; AstList *private_members; AstList *public_members; } class_decl;
         struct { char *name; TypeNode *type; } type_alias;

@@ -1,0 +1,41 @@
+#ifndef FERMI_IOERROR_H
+#define FERMI_IOERROR_H
+
+typedef enum IOErrorKind {
+    IO_OK = 0,
+  // Files
+    IO_NOT_FOUND,
+    IO_PERMISSION_DENIED,
+    IO_ALREADY_EXISTS,
+    IO_INVALID_PATH,
+    IO_IS_DIRECTORY,
+    IO_NOT_DIRECTORY,
+
+    // Read / Write
+    IO_READ_FAILED,
+    IO_WRITE_FAILED,
+    IO_UNEXPECTED_EOF,
+    IO_INVALID_DATA,
+
+    // Resource
+    IO_OUT_OF_MEMORY,
+    IO_OUT_OF_SPACE,
+    IO_TOO_MANY_OPEN_FILES,
+
+    // Device / System
+    IO_DEVICE_ERROR,
+    IO_INTERRUPTED,
+    IO_TIMEOUT,
+    IO_SYSTEM_ERROR,
+
+    // Network 
+    IO_CONNECTION_FAILED,
+    IO_CONNECTION_RESET,
+    IO_CONNECTION_TIMEOUT,
+
+    // Unknown
+    IO_UNKNOWN_ERROR
+
+} IOError;
+
+#endif 

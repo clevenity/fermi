@@ -884,7 +884,7 @@ static char *emit_expr(Codegen *cg, AstNode *n) {
         if (strcmp(ast_type_str(cg,n->binary.left),"ptr")==0 &&
             (!strcmp(op,"+") || !strcmp(op,"-"))) {
             if (!cg->in_unsafe) {
-                fprintf(stderr,"%s:%d:%d: error[E0005]: pointer arithmetic requires an unsafe block\n",
+                fprintf(stderr,"%s:%d:%d: error[E0005]: pointer arithmetic on type 'ptr' requires enclosing 'unsafe' block\n",
                         cg->src_path,n->line,n->col);
                 n->ty=TY_RAW_PTR; return arena_strdup(cg->arena,"null");
             }
@@ -1017,7 +1017,7 @@ static char *emit_expr(Codegen *cg, AstNode *n) {
         if (lhs->kind==NODE_DEREF) {
             char *ptr=emit_expr(cg,lhs->deref_expr.expr);
             if (!cg->in_unsafe) {
-                fprintf(stderr,"%s:%d:%d: error[E0006]: raw pointer dereference-assign requires an unsafe block\n",
+                fprintf(stderr,"%s:%d:%d: error[E0006]: dereference-assignment of raw pointer requires enclosing 'unsafe' block\n",
                         cg->src_path,n->line,n->col);
             }
             rv=coerce_to(cg,rv,rty,"i32");
@@ -1403,7 +1403,7 @@ static char *emit_expr(Codegen *cg, AstNode *n) {
             emit_instr(cg,sel);
             n->ty=TY_INT; return dst;
         }
-        fprintf(stderr,"%s:%d:%d: error[E0007]: unknown intrinsic '@%s'\n",cg->src_path,n->line,n->col,_an);
+        fprintf(stderr,"%s:%d:%d: error[E0007]: unknown intrinsic identifier '@%s'\n",cg->src_path,n->line,n->col,_an);
         n->ty=TY_VOID; return arena_strdup(cg->arena,"0");
     }
     case NODE_NS_CALL:
@@ -1415,7 +1415,7 @@ static char *emit_expr(Codegen *cg, AstNode *n) {
         n->ty=n->cast.type?n->cast.type->kind:TY_INT;
         if (strcmp(from,"ptr")==0 && is_int_type(to)) {
             if (!cg->in_unsafe) {
-                fprintf(stderr,"%s:%d:%d: error[E0008]: pointer-to-integer cast requires an unsafe block\n",
+                fprintf(stderr,"%s:%d:%d: error[E0008]: pointer-to-integer cast requires enclosing 'unsafe' block\n",
                         cg->src_path,n->line,n->col);
                 return arena_strdup(cg->arena,"0");
             }
@@ -1427,7 +1427,7 @@ static char *emit_expr(Codegen *cg, AstNode *n) {
         }
         if (is_int_type(from) && strcmp(to,"ptr")==0) {
             if (!cg->in_unsafe) {
-                fprintf(stderr,"%s:%d:%d: error[E0009]: integer-to-pointer cast requires an unsafe block\n",
+                fprintf(stderr,"%s:%d:%d: error[E0009]: integer-to-pointer cast requires enclosing 'unsafe' block\n",
                         cg->src_path,n->line,n->col);
                 return arena_strdup(cg->arena,"null");
             }
@@ -1573,7 +1573,7 @@ static char *emit_expr(Codegen *cg, AstNode *n) {
         const char *pty=ast_type_str(cg,n->deref_expr.expr);
         const char *inner_ty=(strcmp(pty,"ptr")==0)?"i32":pty;
         if (!cg->in_unsafe) {
-            fprintf(stderr,"%s:%d:%d: error[E0010]: raw pointer dereference requires an unsafe block\n",
+            fprintf(stderr,"%s:%d:%d: error[E0010]: raw pointer dereference requires enclosing 'unsafe' block\n",
                     cg->src_path,n->line,n->col);
         }
         char *v=emit_load(cg,ptr,inner_ty);
@@ -2109,7 +2109,7 @@ static void emit_stmt(Codegen *cg, AstNode *n) {
         cg->in_unsafe = saved;
         break;
     }
-    case NODE_STRUCT_DECL: case NODE_ENUM_DECL: case NODE_CLASS_DECL:
+    case NODE_ENUM_DECL: case NODE_CLASS_DECL:
         break;
     case NODE_COMPTIME_LET:
         if(cg->n_comptime<64){
@@ -2129,30 +2129,7 @@ static void emit_stmt(Codegen *cg, AstNode *n) {
 static void collect_top_decls(Codegen *cg, AstNode *prog) {
     for (AstList *it=prog->program.decls;it;it=it->next) {
         AstNode *n=it->node; if(!n)continue;
-        if(n->kind==NODE_STRUCT_DECL) {
-            if(cg->nstruct<MAX_STRUCTS){
-                StructInfo *si=&cg->structs[cg->nstruct++];
-                si->name=n->struct_decl.name;
-                si->nfields=0;
-                si->is_class=0;
-                for(AstList *fl=n->struct_decl.fields;fl&&si->nfields<64;fl=fl->next){
-                    AstNode *f=fl->node; if(!f)continue;
-                    si->fields[si->nfields]=f->var_decl.name;
-                    si->field_types[si->nfields]=f->var_decl.type?
-                        (char*)typenode_to_llvm(cg,f->var_decl.type):"i32";
-                    si->nfields++;
-                }
-                FirStructDecl *fsd=arena_alloc(cg->arena,sizeof(FirStructDecl));
-                memset(fsd,0,sizeof(FirStructDecl));
-                fsd->name=n->struct_decl.name;
-                fsd->nfields=si->nfields;
-                for(int k=0;k<si->nfields;k++)
-                    fsd->field_types[k]=si->field_types[k];
-                FirStructDecl **last=&cg->mod.struct_decls;
-                while(*last)last=&(*last)->next;
-                *last=fsd;
-            }
-        }else if(n->kind==NODE_ENUM_DECL){
+        if(n->kind==NODE_ENUM_DECL){
             if(cg->nenum<MAX_ENUMS){
                 EnumInfo *ei=&cg->enums[cg->nenum++];
                 ei->name=n->enum_decl.name;
@@ -2319,10 +2296,6 @@ void codegen_emit(Codegen *cg, AstNode *program) {
             break;
         case NODE_FN_DECL: case NODE_UNIT_DECL:
             emit_fn_decl(cg,n,NULL); break;
-        case NODE_STRUCT_DECL:
-            for(AstList *ml=n->struct_decl.methods;ml;ml=ml->next)
-                emit_fn_decl(cg,ml->node,n->struct_decl.name);
-            break;
         case NODE_CLASS_DECL: {
             for(AstList *ml=n->class_decl.private_members;ml;ml=ml->next){
                 AstNode *m=ml->node; if(!m)continue;

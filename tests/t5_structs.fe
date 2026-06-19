@@ -1,5 +1,5 @@
 import <std.io>;
-struct Point {
+class Point {
     x: int;
     y: int;
 

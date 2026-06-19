@@ -107,7 +107,6 @@ static TokenType kw_check(const char *s,int n){
             if(!memcmp(s,"return",6))return TOK_RETURN;
             if(!memcmp(s,"region",6))return TOK_REGION;
             break;
-        case 's': if(!memcmp(s,"struct",6))return TOK_STRUCT; break;
         case 'u':
             if(!memcmp(s,"ushort",6))return TOK_USHORT;
             if(!memcmp(s,"unsafe",6))return TOK_UNSAFE;

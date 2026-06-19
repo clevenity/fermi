@@ -1,7 +1,7 @@
 import <std.io>;
 import <std.math>;
 
-struct Point {
+class Point {
     x: float;
     y: float;
 }

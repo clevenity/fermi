@@ -37,7 +37,6 @@ const char *token_type_str(TokenType t){
     case TOK_IMPORT:     return "import";
     case TOK_EXPORT:     return "export";
     case TOK_MODULE:     return "module";
-    case TOK_STRUCT:     return "struct";
     case TOK_ENUM:       return "enum";
     case TOK_CLASS:      return "class";
     case TOK_PUBLIC:     return "public";

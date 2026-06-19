@@ -48,9 +48,6 @@ static void lower_node(Hir *h, AstNode *n) {
     case NODE_STRUCT_INIT: lower_list(h,n->struct_init.fields); break;
     case NODE_REGION: lower_list(h,n->region_block.body); break;
     case NODE_CLASS_DECL: lower_list(h,n->class_decl.private_members); lower_list(h,n->class_decl.public_members); break;
-    case NODE_STRUCT_DECL:
-        for(AstList *ml=n->struct_decl.methods;ml;ml=ml->next) lower_node(h,ml->node);
-        break;
     case NODE_DEFER: lower_node(h,n->defer_stmt.expr); break;
     default: break;
     }
